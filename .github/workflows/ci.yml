@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,7 +28,11 @@ jobs:
         ./mconfig && make -C builddir && sudo make -C builddir install
         cd ..
 
-    - name: Pull container from DockerHub
+    - name: Build Apptainer container
       run: |
-        apptainer pull mpi_hello.sif docker://ubuntu:22.04
+        apptainer build mpi_hello.sif mpi_hello.def
+
+    - name: Test container with MPI
+      run: |
+        apptainer exec mpi_hello.sif mpirun -np 2 /mpi_hello
 
