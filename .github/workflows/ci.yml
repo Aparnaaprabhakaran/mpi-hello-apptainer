@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,11 +28,7 @@ jobs:
         ./mconfig && make -C builddir && sudo make -C builddir install
         cd ..
 
-    - name: Build Apptainer container
+    - name: Run MPI Hello from definition (without .sif build)
       run: |
-        apptainer build mpi_hello.sif mpi_hello.def
-
-    - name: Test container with MPI
-      run: |
-        apptainer exec mpi_hello.sif mpirun -np 2 /mpi_hello
+        apptainer exec --containall --writable-tmpfs --fakeroot mpi_hello.def mpirun -np 2 ./mpi_hello
 
