@@ -1,0 +1,16 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%post
+    apt update && apt install -y mpich build-essential
+    mpicc -o /mpi_hello /mpi_hello.c
+
+%files
+    mpi_hello.c /mpi_hello.c
+
+%runscript
+    mpirun -np 2 /mpi_hello
+
+%labels
+    Author YourName
+
