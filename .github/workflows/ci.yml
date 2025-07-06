@@ -1,0 +1,33 @@
+name: Apptainer CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Install Apptainer dependencies
+      run: |
+        sudo apt-get update && sudo apt-get install -y \
+          build-essential libseccomp-dev pkg-config squashfs-tools cryptsetup curl git
+
+    - name: Install Apptainer
+      run: |
+        export VERSION=1.2.5
+        curl -LO https://github.com/apptainer/apptainer/releases/download/v$VERSION/apptainer-$VERSION.tar.gz
+        tar -xzf apptainer-$VERSION.tar.gz
+        cd apptainer-$VERSION
+        ./mconfig && make -C builddir && sudo make -C builddir install
+        cd ..
+
+    - name: Build Apptainer container
+      run: |
+        apptainer build mpi_hello.sif mpi_hello.def
