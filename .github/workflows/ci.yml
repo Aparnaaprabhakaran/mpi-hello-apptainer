@@ -28,7 +28,11 @@ jobs:
         ./mconfig && make -C builddir && sudo make -C builddir install
         cd ..
 
-    - name: Run MPI Hello from definition (without .sif build)
+    - name: Pull a minimal MPI image
       run: |
-        apptainer exec --containall --writable-tmpfs --fakeroot mpi_hello.def mpirun -np 2 ./mpi_hello
+        apptainer pull mpi_test.sif docker://ghcr.io/apptainer/mpi-example
+
+    - name: Run test inside container
+      run: |
+        apptainer exec mpi_test.sif mpirun -np 2 /hello
 
