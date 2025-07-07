@@ -2,9 +2,9 @@ name: Apptainer CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
@@ -16,27 +16,21 @@ jobs:
 
     - name: Install Apptainer dependencies
       run: |
-        sudo apt-get update && sudo apt-get install -y \
-          build-essential libseccomp-dev pkg-config squashfs-tools cryptsetup curl git
+        sudo apt-get update
+        sudo apt-get install -y build-essential libseccomp-dev pkg-config squashfs-tools cryptsetup curl
 
     - name: Install Apptainer
       run: |
         export VERSION=1.2.5
-        curl -LO https://github.com/apptainer/apptainer/releases/download/v$VERSION/apptainer-$VERSION.tar.gz
-        tar -xzf apptainer-$VERSION.tar.gz
-        cd apptainer-$VERSION
-        ./mconfig && make -C builddir && sudo make -C builddir install
-        cd ..
+        curl -LO https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer_${VERSION}_amd64.deb
+        sudo dpkg -i apptainer_${VERSION}_amd64.deb
 
     - name: Pull MPI-enabled container from DockerHub
-      run: |
-        apptainer pull mpi_test.sif docker://mpioperator/mpi-base:latest
+      run: apptainer pull mpi_test.sif docker://ghcr.io/apptainer/mpi-example:latest
 
     - name: Compile your mpi_hello.c
-      run: |
-        mpicc mpi_hello.c -o mpi_hello
+      run: mpicc -o mpi_hello mpi_hello.c
 
     - name: Run your mpi_hello inside container
-      run: |
-        apptainer exec mpi_test.sif mpirun -np 2 ./mpi_hello
+      run: apptainer exec --bind ${{ github.workspace }}:/mnt mpi_test.sif mpirun -np 2 /mnt/mpi_hello
 
