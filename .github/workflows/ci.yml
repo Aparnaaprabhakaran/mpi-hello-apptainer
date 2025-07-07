@@ -1,36 +1,41 @@
 name: Apptainer CI
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+on: [push]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Set up job
+        run: echo "Starting CI for Apptainer container"
 
-    - name: Install Apptainer dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential libseccomp-dev pkg-config squashfs-tools cryptsetup curl
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Install Apptainer
-      run: |
-        export VERSION=1.2.5
-        curl -LO https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer_${VERSION}_amd64.deb
-        sudo dpkg -i apptainer_${VERSION}_amd64.deb
+      - name: Install Apptainer dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential libseccomp-dev pkg-config \
+            squashfs-tools cryptsetup curl \
+            libfuse2 squashfuse fuse2fs
 
-    - name: Pull MPI-enabled container from DockerHub
-      run: apptainer pull mpi_test.sif docker://ghcr.io/apptainer/mpi-example:latest
+      - name: Install Apptainer
+        run: |
+          export VERSION=1.2.5
+          curl -LO https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer_${VERSION}_amd64.deb
+          sudo dpkg -i apptainer_${VERSION}_amd64.deb
 
-    - name: Compile your mpi_hello.c
-      run: mpicc -o mpi_hello mpi_hello.c
+      - name: Pull MPI-enabled container from DockerHub
+        run: |
+          apptainer pull mpi_test.sif docker://ghcr.io/apptainer/mpi-example
 
-    - name: Run your mpi_hello inside container
-      run: apptainer exec --bind ${{ github.workspace }}:/mnt mpi_test.sif mpirun -np 2 /mnt/mpi_hello
+      - name: Compile your mpi_hello.c
+        run: |
+          mpicc -o mpi_hello mpi_hello.c
+
+      - name: Run your mpi_hello inside container
+        run: |
+          apptainer exec mpi_test.sif mpirun -np 2 ./mpi_hello
 
