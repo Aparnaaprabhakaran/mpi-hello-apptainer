@@ -28,11 +28,15 @@ jobs:
         ./mconfig && make -C builddir && sudo make -C builddir install
         cd ..
 
-    - name: Pull a minimal MPI image
+    - name: Pull MPI-enabled container from DockerHub
       run: |
-        apptainer pull mpi_test.sif docker://ghcr.io/apptainer/mpi-example
+        apptainer pull mpi_test.sif docker://mpioperator/mpi-base:latest
 
-    - name: Run test inside container
+    - name: Compile your mpi_hello.c
       run: |
-        apptainer exec mpi_test.sif mpirun -np 2 /hello
+        mpicc mpi_hello.c -o mpi_hello
+
+    - name: Run your mpi_hello inside container
+      run: |
+        apptainer exec mpi_test.sif mpirun -np 2 ./mpi_hello
 
