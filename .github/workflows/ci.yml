@@ -1,4 +1,4 @@
-name: Apptainer CI
+name: Test mpi_hello with Apptainer
 
 on: [push]
 
@@ -7,9 +7,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set up job
-        run: echo "Starting CI for Apptainer container"
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -18,8 +15,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             build-essential libseccomp-dev pkg-config \
-            squashfs-tools cryptsetup curl \
-            libfuse2 squashfuse fuse2fs
+            squashfuse fuse2fs libfuse2 cryptsetup curl
 
       - name: Install Apptainer
         run: |
@@ -27,15 +23,14 @@ jobs:
           curl -LO https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer_${VERSION}_amd64.deb
           sudo dpkg -i apptainer_${VERSION}_amd64.deb
 
-      - name: Pull MPI-enabled container from DockerHub
+      - name: Build container from your mpi_hello.def
         run: |
-          apptainer pull mpi_test.sif docker://ghcr.io/apptainer/mpi-example
+          apptainer build mpi_hello.sif mpi_hello.def
 
       - name: Compile your mpi_hello.c
         run: |
           mpicc -o mpi_hello mpi_hello.c
 
-      - name: Run your mpi_hello inside container
+      - name: Run your MPI Hello inside the container
         run: |
-          apptainer exec mpi_test.sif mpirun -np 2 ./mpi_hello
-
+          apptainer exec mpi_hello.sif mpirun -np 2 ./mpi_hello
