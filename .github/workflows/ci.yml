@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  build-and-run:
     runs-on: ubuntu-latest
 
     steps:
@@ -30,7 +30,7 @@ jobs:
         sudo make -C builddir install
         cd ..
 
-    - name: Build MPI Hello World container from definition file
+    - name: Build MPI Hello World container
       run: |
         apptainer build mpi_hello.sif mpi_hello.def
 
