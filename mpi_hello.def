@@ -4,6 +4,7 @@ From: ubuntu:22.04
 %post
     apt update && apt install -y mpich build-essential
     mpicc -o /mpi_hello /mpi_hello.c
+    apt-get remove -y libpsm2 || true
 
 %files
     mpi_hello.c /mpi_hello.c

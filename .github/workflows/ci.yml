@@ -1,36 +1,40 @@
-name: Test mpi_hello with Apptainer
+name: Apptainer CI
 
-on: [push]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Install Apptainer dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential libseccomp-dev pkg-config \
-            squashfuse fuse2fs libfuse2 cryptsetup curl
+    - name: Install Apptainer dependencies
+      run: |
+        sudo apt-get update && sudo apt-get install -y \
+          build-essential libseccomp-dev pkg-config squashfs-tools cryptsetup runc wget git uuid-dev libgpgme-dev libseccomp-dev libglib2.0-dev
 
-      - name: Install Apptainer
-        run: |
-          export VERSION=1.2.5
-          curl -LO https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer_${VERSION}_amd64.deb
-          sudo dpkg -i apptainer_${VERSION}_amd64.deb
+    - name: Install Apptainer
+      run: |
+        export VERSION=1.2.5
+        wget https://github.com/apptainer/apptainer/releases/download/v${VERSION}/apptainer-${VERSION}.tar.gz
+        tar -xzf apptainer-${VERSION}.tar.gz
+        cd apptainer-${VERSION}
+        ./mconfig
+        make -C builddir
+        sudo make -C builddir install
+        cd ..
 
-      - name: Build container from your mpi_hello.def
-        run: |
-          apptainer build mpi_hello.sif mpi_hello.def
+    - name: Build MPI Hello World container from definition file
+      run: |
+        apptainer build mpi_hello.sif mpi_hello.def
 
-      - name: Compile your mpi_hello.c
-        run: |
-          mpicc -o mpi_hello mpi_hello.c
+    - name: Run MPI Hello World container
+      run: |
+        apptainer run mpi_hello.sif
 
-      - name: Run your MPI Hello inside the container
-        run: |
-          apptainer exec mpi_hello.sif mpirun -np 2 ./mpi_hello

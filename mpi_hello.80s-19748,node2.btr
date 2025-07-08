@@ -1,0 +1,6 @@
+
+mpi_hello:19748 terminated with signal 4 at PC=7fd812aaea73 SP=7fffd9d84dd0.  Backtrace:
+/lib/x86_64-linux-gnu/libpsm2.so.2(+0x6a73)[0x7fd812aaea73]
+/lib64/ld-linux-x86-64.so.2(+0x647e)[0x7fd8156b947e]
+/lib64/ld-linux-x86-64.so.2(+0x6568)[0x7fd8156b9568]
+/lib64/ld-linux-x86-64.so.2(+0x202ca)[0x7fd8156d32ca]
